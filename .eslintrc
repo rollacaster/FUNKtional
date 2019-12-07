@@ -1,0 +1,25 @@
+{
+  "parser": "babel-eslint",
+  "extends": ["standard", "standard-jsx", "prettier", "prettier/react"],
+  "rules": {
+    "standard/computed-property-even-spacing": "off"
+  },
+  "globals": {
+    "describe": true,
+    "it": true,
+    "before": true,
+    "beforeEach": true,
+    "afterEach": true,
+    "Headers": true,
+    "localStorage": true,
+    "renderer": true,
+    "IntlProvider": true,
+    "expect": true,
+    "jest": true,
+    "mount": true,
+    "requestAnimationFrame": true,
+    "shallow": true,
+    "FormattedMessage": true,
+    "WebSocket": true
+  }
+}

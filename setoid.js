@@ -1,5 +1,7 @@
 const daggy = require('daggy')
 
+const { List, Cons, Nil } = require('./list')
+
 //
 // Source Block 1
 //
@@ -86,36 +88,6 @@ Bool.prototype.thenElse = function(then, or) {
   })
 }
 
-//
-// Source Block 6
-//
-const List = daggy.taggedSum('List', {
-  Cons: ['head', 'tail'],
-  Nil: []
-})
-
-List.prototype.map = function(f) {
-  return this.cata({
-    Cons: (head, tail) => List.Cons(f(head), tail.map(f)),
-
-    Nil: () => List.Nil
-  })
-}
-
-// A "static" method for convenience.
-List.from = function(xs) {
-  return xs.reduceRight((acc, x) => List.Cons(x, acc), List.Nil)
-}
-
-// And a conversion back for convenience!
-List.prototype.toArray = function() {
-  return this.cata({
-    Cons: (x, acc) => [x, ...acc.toArray()],
-
-    Nil: () => []
-  })
-}
-
 // Check that each point matches
 // equals :: Coord ~> Coord -> Bool
 Coord.prototype.equals = function(that) {
@@ -134,17 +106,6 @@ Bool.prototype.equals = function(that) {
   return this instanceof Bool.True === that instanceof Bool.True
 }
 
-// Check the lists' heads, then their tails
-// equals :: Setoid a => [a] ~> [a] -> Bool
-List.prototype.equals = function(that) {
-  return this.cata({
-    // Note the two different Setoid uses:
-    Cons: (head, tail) => head.equals(that.head) && tail.equals(that.tail), // a // [a]
-
-    Nil: () => that instanceof List.Nil
-  })
-}
-
 Array.prototype.equals = function(arr) {
   if (this.length !== arr.length) return false
 
@@ -155,18 +116,25 @@ Array.prototype.equals = function(arr) {
 List.prototype.isPalindrome = function() {
   return this.cata({
     Cons: () =>
-      this.reverse().toArray().every((a, i) => this.toArray()[i] === a),
+      this.reverse()
+        .toArray()
+        .every((a, i) => this.toArray()[i] === a),
     Nil: () => true
   })
 }
-
+console.log(JSON.stringify(List.from([1, 2, 3]).concat(List.from([3, 4]))))
 // reverse :: Setoid a => [a] ~> [a]
 List.prototype.reverse = function() {
   return this.cata({
-    Cons: (head, tail) => List.from(this.toArray().reverse()),
-    Nil: () => Nil
+    Cons: (head, tail) => tail.reverse().concat(Cons(head, Nil)),
+    Nil: () => this
   })
 }
+// console.log(List.Nil.is(List.Cons))
+// console.log(List.from([1, 2]).toString())
+// console.log(
+//   JSON.stringify(List.from([1, 2, 3]).concat(List.from([3, 4])).reverse())
+// )
 
 // indexOf :: Setoid a => [a] -> a -> Int
 const indexOf = xs => x => {
@@ -191,5 +159,3 @@ Set.prototype.remove = function(item) {
   this.items = this.items.filter(a => !a.equals(item))
   return this
 }
-
-console.log(Set([Coord(0, 0, 0)]).add(Coord(0, 1, 0)).remove(Coord(0, 1, 0)))
